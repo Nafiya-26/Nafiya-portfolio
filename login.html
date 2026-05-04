@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — DyslexEase</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="auth-page auth-bg-login">
+    <div class="auth-shapes">
+      <div class="auth-shape as-1"></div>
+      <div class="auth-shape as-2"></div>
+      <div class="auth-shape as-3"></div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-logo">
+        <span class="logo-icon">📖</span>
+        <span class="logo-text">DyslexEase</span>
+        <p>Welcome back!</p>
+      </div>
+
+      <h2>Login 👋</h2>
+      <p class="auth-subtitle">Continue your learning journey</p>
+
+      <div class="social-btns">
+        <button class="btn-social" onclick="showToast('🔄 Google login coming soon!')">
+          <span>🅖</span> Google
+        </button>
+        <button class="btn-social" onclick="showToast('🔄 GitHub login coming soon!')">
+          <span>⬛</span> GitHub
+        </button>
+      </div>
+      <div class="auth-divider">or login with email</div>
+
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="loginEmail">📧 Email Address</label>
+          <div class="input-icon">
+            <input type="email" id="loginEmail" placeholder="your@email.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPass">🔒 Password</label>
+          <div class="input-icon">
+            <input type="password" id="loginPass" placeholder="Enter your password" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <div style="text-align: right; margin-bottom: 16px;">
+          <a href="#" style="color: var(--orange); font-weight: 700; font-size: 14px; text-decoration: none;"
+            onclick="showToast('📧 Password reset link sent to your email!')">Forgot Password?</a>
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="rememberMe">
+            <label for="rememberMe">Remember me for 30 days</label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth" style="background: linear-gradient(135deg, #0099FF, #00C896);">
+          🔓 Login to My Account
+        </button>
+      </form>
+
+      <!-- Demo Access -->
+      <div style="margin-top: 20px; padding: 20px; background: #FFF9C4; border-radius: 16px; border: 2px solid #FFD60A; text-align: center;">
+        <p style="font-weight: 800; margin-bottom: 12px; font-size: 15px;">🧪 Try Demo Access</p>
+        <button onclick="demoLogin()" style="background: #FFD60A; border: none; padding: 12px 28px; border-radius: 30px; font-family: var(--font-main); font-weight: 900; font-size: 15px; cursor: pointer; color: #1A1A2E;">
+          ⚡ Enter as Guest
+        </button>
+      </div>
+
+      <div class="auth-switch" style="margin-top: 20px;">
+        Don't have an account? <a href="signup.html">Create one free →</a>
+      </div>
+      <div class="auth-switch" style="margin-top: 8px;">
+        <a href="../index.html">← Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    function demoLogin() {
+      const user = { name: 'Guest Learner', email: 'guest@dyslexease.com', created: new Date().toISOString() };
+      localStorage.setItem('dyslexease_user', JSON.stringify(user));
+      showToast('🎉 Welcome, Guest! Loading dashboard...');
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+    }
+  </script>
+</body>
+</html>
