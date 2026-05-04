@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- Bootstrap 5 CDN (requires internet) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Bootstrap Fallback: Essential utilities if CDN unavailable -->
+  <style>
+    /* Bootstrap essential fallback */
+    .row{display:flex;flex-wrap:wrap;margin-right:-12px;margin-left:-12px}
+    .col-6{flex:0 0 50%;max-width:50%;padding:0 12px;box-sizing:border-box}
+    .col-md-3{padding:0 12px;box-sizing:border-box}
+    .col-md-6{padding:0 12px;box-sizing:border-box}
+    @media(min-width:768px){.col-md-3{flex:0 0 25%;max-width:25%}.col-md-6{flex:0 0 50%;max-width:50%}}
+    .g-3{gap:16px}.g-3.row{margin:0}
+    .mb-3{margin-bottom:16px!important}.mb-4{margin-bottom:24px!important}.mt-2{margin-top:8px!important}.mt-3{margin-top:16px!important}
+    .d-flex{display:flex!important}.align-items-center{align-items:center!important}.justify-content-between{justify-content:space-between!important}
+    .flex-wrap{flex-wrap:wrap!important}.gap-3{gap:16px!important}
+    .nav-pills{display:flex;flex-wrap:wrap;gap:8px;padding:0;list-style:none;margin-bottom:16px}
+    .nav-pills .nav-link{padding:8px 18px;border-radius:30px;border:none;background:#F0F0F0;color:#4A4A6A;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s;text-decoration:none;display:block}
+    .nav-pills .nav-link.active{background:#FF6B35;color:white}
+    .tab-content>.tab-pane{display:none}.tab-content>.active{display:block}
+    .tab-content>.fade{opacity:0;transition:opacity .15s}.tab-content>.fade.show{opacity:1}
+    .bi::before{font-family:"bootstrap-icons"!important}
+    /* Bootstrap Icons fallback text */
+    .bi-box-arrow-right::before{content:"↗"}
+    .bi-magic::before{content:"✨"}
+    .bi-volume-up::before{content:"🔊"}
+    .bi-image::before{content:"🖼"}
+    .bi-graph-up::before{content:"📊"}
+    .bi-clipboard::before{content:"📋"}
+    .bi-sliders::before{content:"🎛"}
+    .bi-trash::before{content:"🗑"}
+  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — DyslexEase</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+
+  <!-- PDF.js CDN — loaded eagerly so it's ready when user uploads -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+
+  <style>
+    .dash-section-title{font-family:var(--font-display);font-size:28px;margin-bottom:20px;color:var(--text-dark);display:flex;align-items:center;gap:10px}
+    .upload-zone{border:3px dashed #E0E0E0;border-radius:20px;padding:40px;text-align:center;cursor:pointer;transition:all .3s;background:#FAFAFA;margin-bottom:20px}
+    .upload-zone:hover{border-color:var(--orange);background:#FFF9F0}
+    .upload-zone .upload-icon{font-size:52px;display:block;margin-bottom:12px}
+    .upload-zone input[type="file"]{display:none}
+    .word-card{display:inline-block;background:white;border:3px solid #E0E0E0;padding:12px 20px;border-radius:16px;margin:6px;font-size:18px;font-weight:700;cursor:pointer;transition:all .2s}
+    .word-card:hover{border-color:var(--orange);background:#FFF9F0;transform:scale(1.05)}
+    .word-card.playing{background:var(--yellow);border-color:var(--orange)}
+    .activity-item{display:flex;align-items:center;gap:16px;padding:16px;background:white;border-radius:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+    .activity-icon{font-size:32px;flex-shrink:0}
+    .activity-text h4{font-weight:800;margin-bottom:4px}
+    .activity-text p{font-size:14px;color:var(--text-medium)}
+    .activity-time{margin-left:auto;font-size:13px;color:var(--text-medium)}
+    .ocr-output{min-height:100px;border:3px solid var(--teal);border-radius:16px;padding:20px;background:#E0F7FA;display:none;margin-top:16px}
+    .ocr-output.visible{display:block;animation:slideUp .4s ease}
+    .letter-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+    .letter-btn{width:52px;height:52px;border-radius:12px;border:3px solid #E0E0E0;background:white;font-family:var(--font-display);font-size:22px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+    .letter-btn:hover{border-color:var(--blue);background:var(--bg-light-blue);transform:scale(1.1)}
+    .color-bg-options{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+    .bg-option{width:40px;height:40px;border-radius:50%;cursor:pointer;border:4px solid transparent;transition:transform .2s,border-color .2s}
+    .bg-option:hover,.bg-option.active{transform:scale(1.2);border-color:var(--text-dark)}
+    .feature-toggle-bar{display:flex;flex-wrap:wrap;gap:10px;padding:14px 16px;background:#F8F8F8;border-radius:14px;margin-bottom:16px;align-items:center}
+    .ftoggle-label{font-weight:800;font-size:14px;color:var(--text-medium);margin-right:4px}
+    .form-check-input{accent-color:var(--orange);width:18px;height:18px;cursor:pointer}
+    .form-check-label{font-weight:700;font-size:14px;cursor:pointer}
+    .form-check{display:flex;align-items:center;gap:6px;background:white;border:2px solid #E0E0E0;border-radius:30px;padding:6px 14px;transition:border-color .2s}
+    .form-check:hover{border-color:var(--orange)}
+    .word-count-badge{display:inline-block;background:var(--blue);color:white;padding:3px 12px;border-radius:20px;font-size:13px;font-weight:800;margin-left:10px}
+    .difficulty-meter{margin-top:12px}
+    .diff-bar{height:10px;border-radius:5px;background:#E0E0E0;overflow:hidden}
+    .diff-fill{height:100%;border-radius:5px;transition:width .5s}
+    .spacing-preview{font-size:18px;font-weight:700;padding:10px 16px;background:var(--bg-cream);border-radius:12px;margin-top:8px;transition:letter-spacing .3s}
+    .nav-pills .nav-link{font-weight:800;font-size:14px;color:var(--text-medium)}
+    .nav-pills .nav-link.active{background:var(--orange);color:white}
+
+    /* Letter spacing cascades to all tokens */
+    #textOutput, #textOutput span, #textOutput b, #textOutput strong { letter-spacing: inherit; }
+
+    /* PDF upload progress */
+    .pdf-progress{display:none;margin-top:12px;padding:12px 16px;background:#FFF3E0;border:2px solid #FF6B35;border-radius:12px;font-weight:700;font-size:14px;color:#E65100;align-items:center;gap:10px}
+    .pdf-progress.visible{display:flex}
+    .pdf-spinner{width:18px;height:18px;border:3px solid #FF6B35;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+<div class="dashboard-page" id="dashboardRoot">
+
+  <!-- NAVBAR -->
+  <nav class="dashboard-nav">
+    <a href="../index.html" class="dash-logo">📖 DyslexEase</a>
+    <div class="dash-user">
+      <div class="dash-avatar" id="userAvatar">L</div>
+      <span class="dash-username" id="userName">Learner</span>
+      <button class="btn-logout" onclick="doLogout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+    </div>
+  </nav>
+
+  <main class="dashboard-main">
+
+    <!-- Welcome -->
+    <div class="dash-welcome">
+      <h1>Welcome back, <span style="color:var(--orange)" id="userNameBig">Learner</span>! 🌟</h1>
+      <p>All your reading tools are ready. Let's make today a great reading day!</p>
+    </div>
+
+    <!-- Quick Tool Cards -->
+    <div class="dash-tools-grid mb-4">
+      <a href="#text-formatter" class="tool-card tc1" onclick="return scrollToSection('text-formatter')"><span class="tool-icon">📝</span><h3>Token Formatter</h3><p>Bionic + syllable split</p></a>
+      <a href="#speech-section" class="tool-card tc2" onclick="return scrollToSection('speech-section')"><span class="tool-icon">🔊</span><h3>Text-to-Speech</h3><p>Hear every word aloud</p></a>
+      <a href="#visual-section" class="tool-card tc3" onclick="return scrollToSection('visual-section')"><span class="tool-icon">🖼️</span><h3>Visual Word Map</h3><p>Every word → emoji image</p></a>
+      <a href="#upload-tool" class="tool-card tc4" onclick="return scrollToSection('upload-tool')"><span class="tool-icon">📤</span><h3>Upload &amp; Analyze</h3><p>TXT / PDF / Image OCR</p></a>
+      <a href="#letter-tool" class="tool-card tc5" onclick="return scrollToSection('letter-tool')"><span class="tool-icon">🔤</span><h3>Letter Practice</h3><p>Click letters to hear them</p></a>
+      <a href="#flashcard-section" class="tool-card tc6" onclick="return scrollToSection('flashcard-section')"><span class="tool-icon">⚡</span><h3>Flashcards</h3><p>Word reveal practice</p></a>
+    </div>
+
+    <!-- MAIN READER TOOL -->
+    <div class="dash-reader" id="text-formatter" style="margin-bottom:28px">
+      <h2 class="dash-section-title">
+        📝 Token-Based Text Formatter
+        <span class="word-count-badge" id="wordCountBadge">0 words</span>
+      </h2>
+
+      <!-- Feature Toggles -->
+      <div class="feature-toggle-bar">
+        <span class="ftoggle-label">🧰 Features:</span>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="rulerToggle">
+          <label class="form-check-label" for="rulerToggle">📏 Reading Ruler</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="focusToggle" onchange="toggleFocusMode(this)">
+          <label class="form-check-label" for="focusToggle">🎯 Focus Mode</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="contrastToggle" onchange="toggleHighContrast(this)">
+          <label class="form-check-label" for="contrastToggle">🌓 High Contrast</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="syllableToggle" checked onchange="toggleSyllables(this)">
+          <label class="form-check-label" for="syllableToggle">🔤 Syllables</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="bionicToggle" checked>
+          <label class="form-check-label" for="bionicToggle">👁️ Bionic</label>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="reader-toolbar">
+        <button class="toolbar-btn" onclick="formatText()"><i class="bi bi-magic"></i> Format</button>
+        <button class="toolbar-btn" onclick="speakText()" id="speech-section"><i class="bi bi-volume-up"></i> Speak All</button>
+        <button class="toolbar-btn" onclick="visualizeText()" id="visual-section"><i class="bi bi-image"></i> Visualize</button>
+        <button class="toolbar-btn" onclick="analyzeText()"><i class="bi bi-graph-up"></i> Analyze</button>
+        <button class="toolbar-btn" onclick="loadSample()"><i class="bi bi-clipboard"></i> Sample</button>
+        <div class="toolbar-divider"></div>
+        <button class="toolbar-btn" onclick="toggleCustomize()"><i class="bi bi-sliders"></i> Customize</button>
+        <button class="toolbar-btn" onclick="clearAll()"><i class="bi bi-trash"></i> Clear</button>
+        <select class="toolbar-select" onchange="applyFont(this.value)">
+          <option value="Nunito">Nunito</option>
+          <option value="Georgia">Georgia</option>
+          <option value="'Courier New'">Courier</option>
+          <option value="Arial">Arial</option>
+          <option value="Verdana">Verdana</option>
+        </select>
+      </div>
+
+      <!-- Input -->
+      <textarea class="reader-input" id="textInput" rows="6"
+        placeholder="Type or paste your text here...&#10;&#10;Example: 'The cat sat on the mat. She loves to read books every day.'&#10;&#10;Then click Format to apply the Token Algorithm!"
+        oninput="updateWordCount(this.value)"></textarea>
+
+      <!-- Difficulty meter -->
+      <div class="difficulty-meter" id="difficultyMeter" style="display:none">
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-bottom:4px">
+          <span id="diffLabel">Difficulty: —</span><span id="diffStats"></span>
+        </div>
+        <div class="diff-bar"><div class="diff-fill" id="diffFill"></div></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="reader-action-btns mt-3">
+        <button class="btn-format" onclick="formatText()">✨ Format (Token Algorithm)</button>
+        <button class="btn-speak"  onclick="speakText()">🔊 Read Aloud</button>
+        <button class="btn-visualize" onclick="visualizeText()">🖼️ Visual Map</button>
+        <button class="btn-clear"  onclick="clearAll()">🧹 Clear</button>
+      </div>
+
+      <!-- Speed + Letter Spacing -->
+      <div class="row mt-3 g-3">
+        <div class="col-md-6">
+          <div class="speed-control">
+            <label>🐢</label>
+            <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="0.8">
+            <span class="speed-value" id="speedValue">0.8x</span>
+            <label>🐇 Speed</label>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="speed-control">
+            <label>↔️</label>
+            <input type="range" id="letterSpacingSlider" min="0" max="0.25" step="0.02" value="0.04"
+              oninput="applyLetterSpacing(this.value)">
+            <span class="speed-value" id="lsValue">0.04em</span>
+            <label>Letter Spacing</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Speech Progress -->
+      <div class="speech-progress" id="speechProgress">
+        <p style="font-size:14px;font-weight:700;margin-bottom:6px">🔊 Reading progress:</p>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <!-- Formatted Output -->
+      <div class="reader-output" id="textOutput" style="margin-top:20px"></div>
+
+      <!-- Visual Word Map Output -->
+      <div class="visual-output" id="visualOutput"></div>
+    </div>
+
+    <!-- CUSTOMIZATION PANEL -->
+    <div class="customize-panel" id="customizePanel" style="margin-bottom:28px">
+      <h3>🎨 Customize Your Reading Experience</h3>
+      <div class="custom-options">
+        <div class="custom-option">
+          <label>Font Size: <span id="fontSizeDisplay">20px</span></label>
+          <input type="range" min="14" max="34" value="20" step="1"
+            oninput="applyFontSize(this.value, document.getElementById('fontSizeDisplay'))">
+        </div>
+        <div class="custom-option">
+          <label>🔍 Zoom Level: <span id="zoomDisplay">100%</span></label>
+          <input type="range" id="zoomSlider" min="80" max="150" value="100" step="5"
+            oninput="applyZoom(this.value)">
+        </div>
+        <div class="custom-option">
+          <label>Line Spacing: <span id="spacingDisplay">2.0</span></label>
+          <input type="range" min="1.4" max="3.5" value="2" step="0.1"
+            oninput="applySpacing(this.value, document.getElementById('spacingDisplay'))">
+        </div>
+        <div class="custom-option">
+          <label>Font Type</label>
+          <select onchange="applyFont(this.value)">
+            <option value="Nunito">Nunito (Recommended)</option>
+            <option value="Georgia">Georgia (Serif)</option>
+            <option value="Verdana">Verdana (Wide)</option>
+            <option value="Arial">Arial</option>
+            <option value="'Courier New'">Monospace</option>
+          </select>
+        </div>
+        <div class="custom-option">
+          <label>Background Colour</label>
+          <div class="color-bg-options">
+            <div class="bg-option active" style="background:#FFFBF0" onclick="applyBg('#FFFBF0',this)" title="Cream"></div>
+            <div class="bg-option" style="background:#E3F2FD" onclick="applyBg('#E3F2FD',this)" title="Sky Blue"></div>
+            <div class="bg-option" style="background:#E8F5E9" onclick="applyBg('#E8F5E9',this)" title="Mint"></div>
+            <div class="bg-option" style="background:#FFF9C4" onclick="applyBg('#FFF9C4',this)" title="Lemon"></div>
+            <div class="bg-option" style="background:#FCE4EC" onclick="applyBg('#FCE4EC',this)" title="Rose"></div>
+            <div class="bg-option" style="background:#F3E5F5" onclick="applyBg('#F3E5F5',this)" title="Lavender"></div>
+            <div class="bg-option" style="background:#FFF8F0" onclick="applyBg('#FFF8F0',this)" title="Peach"></div>
+            <div class="bg-option" style="background:#FFFFFF;border:2px solid #E0E0E0" onclick="applyBg('#FFFFFF',this)" title="White"></div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <label style="font-weight:800;font-size:14px;color:var(--text-medium)">Letter Spacing Preview:</label>
+        <div class="spacing-preview" id="spacingPreview">The quick brown fox jumps over the lazy dog</div>
+      </div>
+    </div>
+
+    <!-- UPLOAD & ANALYZE -->
+    <div class="dash-reader" id="upload-tool" style="margin-bottom:28px">
+      <h2 class="dash-section-title">📤 Upload &amp; Analyze</h2>
+      <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".txt,.pdf,image/*" onchange="handleFileUpload(event)">
+        <span class="upload-icon">📁</span>
+        <p style="font-weight:800;font-size:18px;margin-bottom:8px">Drop file here or click to upload</p>
+        <p style="color:var(--text-medium)">Supports: <strong>.TXT</strong>, <strong>.PDF</strong>, <strong>Images</strong> (OCR)</p>
+      </div>
+
+      <!-- PDF processing indicator -->
+      <div class="pdf-progress" id="pdfProgress">
+        <div class="pdf-spinner"></div>
+        <span id="pdfProgressMsg">Reading PDF pages...</span>
+      </div>
+
+      <div class="ocr-output" id="ocrOutput">
+        <p style="font-weight:800;margin-bottom:12px">📄 Extracted Text:</p>
+        <p id="ocrText" style="white-space:pre-wrap;word-break:break-word;"></p>
+        <button onclick="useOcrText()" class="btn-format mt-2">📝 Send to Formatter →</button>
+      </div>
+    </div>
+
+    <!-- LETTER & WORD PRACTICE -->
+    <div class="dash-reader" id="letter-tool" style="margin-bottom:28px">
+      <h2 class="dash-section-title">🔤 Letter &amp; Word Practice</h2>
+      <ul class="nav nav-pills mb-3" id="practiceTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#letters-pane" type="button">🔤 Letters</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#numbers-pane" type="button">🔢 Numbers</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="pill" data-bs-target="#words-pane" type="button">💬 Word Builder</button>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="letters-pane">
+          <div class="letter-grid" id="alphabetGrid"></div>
+        </div>
+        <div class="tab-pane fade" id="numbers-pane">
+          <div class="letter-grid" id="numberGrid"></div>
+        </div>
+        <div class="tab-pane fade" id="words-pane">
+          <div class="d-flex gap-3 align-items-center flex-wrap mt-2">
+            <input type="text" id="wordBuilder" placeholder="Type a word..."
+              class="reader-input" style="width:auto;flex:1;min-width:200px;min-height:auto;padding:12px 16px;font-size:22px;letter-spacing:0.1em">
+            <button class="btn-speak" onclick="speakBuiltWord()">🔊 Speak</button>
+            <button class="btn-format" onclick="explodeWord()">💥 Break Apart</button>
+            <button class="btn-visualize" onclick="visualizeBuiltWord()">🖼️ Show Image</button>
+          </div>
+          <div id="wordExploded" style="margin-top:16px;min-height:60px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLASHCARDS -->
+    <div class="dash-reader" id="flashcard-section" style="margin-bottom:28px">
+      <h2 class="dash-section-title">⚡ Quick Word Flashcards</h2>
+      <p style="color:var(--text-medium);margin-bottom:16px">Tap a card to reveal the word and hear it read aloud!</p>
+      <div class="row g-3" id="flashcardGrid"></div>
+      <button class="btn-format mt-3" onclick="generateFlashcards()">🔀 New Cards</button>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="dash-reader">
+      <h2 class="dash-section-title">📊 Activity</h2>
+      <div class="activity-item"><span class="activity-icon">📝</span><div class="activity-text"><h4>Token Formatter</h4><p>Bionic reading + syllable split</p></div><span class="activity-time">Ready</span></div>
+      <div class="activity-item"><span class="activity-icon">🔊</span><div class="activity-text"><h4>Text-to-Speech</h4><p>Web Speech API enabled</p></div><span class="activity-time">Active</span></div>
+      <div class="activity-item"><span class="activity-icon">🖼️</span><div class="activity-text"><h4>Visual Word Map</h4><p>200+ word emoji dictionary</p></div><span class="activity-time">Active</span></div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/main.js"></script>
+<script>
+  // ── ALPHABET & NUMBER GRIDS ───────────────────────────────────
+  function buildAlphabet() {
+    const grid = document.getElementById('alphabetGrid');
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(letter => {
+      const btn = document.createElement('button');
+      btn.className = 'letter-btn'; btn.textContent = letter;
+      btn.onclick = () => {
+        if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(letter); u.rate=0.7; window.speechSynthesis.speak(u); }
+        btn.style.background='#FFD60A'; btn.style.borderColor='#FF6B35';
+        setTimeout(()=>{ btn.style.background=''; btn.style.borderColor=''; },800);
+      };
+      grid.appendChild(btn);
+    });
+  }
+
+  function buildNumbers() {
+    const grid = document.getElementById('numberGrid');
+    // 0–20 sequential, then round numbers up to 100
+    const nums = Array.from({length: 50}, (_,i) => String(i + 1));
+    nums.forEach(n => {
+      const btn = document.createElement('button');
+      btn.className = 'letter-btn'; btn.style.width='auto'; btn.style.padding='10px 16px'; btn.textContent=n;
+      btn.onclick = () => { if ('speechSynthesis' in window){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(n);u.rate=0.7;window.speechSynthesis.speak(u);} btn.style.background='#FFD60A'; setTimeout(()=>btn.style.background='',600); };
+      grid.appendChild(btn);
+    });
+  }
+
+  buildAlphabet(); buildNumbers();
+
+  // ── WORD BUILDER ─────────────────────────────────────────────
+  function speakBuiltWord() {
+    const word = document.getElementById('wordBuilder').value.trim();
+    if (!word) { showToast('Please type a word first!','warning'); return; }
+    if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(word); u.rate=0.7; window.speechSynthesis.speak(u); }
+  }
+
+  function explodeWord() {
+    const word = document.getElementById('wordBuilder').value.trim();
+    if (!word) { showToast('Please type a word first!','warning'); return; }
+    const c = document.getElementById('wordExploded'); c.innerHTML='';
+    word.split('').forEach((letter,i)=>{
+      const el=document.createElement('div'); el.className='word-card';
+      el.style.background=`hsl(${i*36},80%,85%)`; el.style.borderColor=`hsl(${i*36},80%,60%)`;
+      el.textContent=letter.toUpperCase();
+      el.onclick=()=>{ if('speechSynthesis'in window){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(letter);u.rate=0.7;window.speechSynthesis.speak(u);} el.classList.add('playing'); setTimeout(()=>el.classList.remove('playing'),600); };
+      c.appendChild(el);
+    });
+  }
+
+  function visualizeBuiltWord() {
+    const word = document.getElementById('wordBuilder').value.trim();
+    if (!word) return;
+    document.getElementById('textInput').value = word;
+    visualizeText();
+    scrollToSection('text-formatter');
+  }
+
+  // ── FILE UPLOAD HANDLER (TXT + PDF + IMAGE) ──────────────────
+  function handleFileUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const out  = document.getElementById('ocrOutput');
+    const txt  = document.getElementById('ocrText');
+    const prog = document.getElementById('pdfProgress');
+    const msg  = document.getElementById('pdfProgressMsg');
+
+    // Reset UI
+    out.classList.remove('visible');
+    prog.classList.remove('visible');
+    txt.textContent = '';
+
+    // ── Plain text file ──────────────────────────────────────
+    if (file.type === 'text/plain') {
+      const r = new FileReader();
+      r.onload = ev => {
+        txt.textContent = ev.target.result;
+        out.classList.add('visible');
+        showToast('✅ Text file loaded!', 'success');
+      };
+      r.readAsText(file);
+      return;
+    }
+
+    // ── Image file (OCR placeholder) ─────────────────────────
+    if (file.type.startsWith('image/')) {
+      txt.textContent = '🔍 OCR processing... In production this uses Tesseract.js / Google Vision API.';
+      out.classList.add('visible');
+      showToast('OCR feature ready!', 'success');
+      return;
+    }
+
+    // ── PDF file — real extraction via PDF.js ────────────────
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+
+      if (!window.pdfjsLib) {
+        txt.textContent = '❌ PDF reader failed to load. Please check your internet connection and refresh.';
+        out.classList.add('visible');
+        showToast('❌ PDF.js not loaded', 'error');
+        return;
+      }
+
+      prog.classList.add('visible');
+      msg.textContent = 'Reading PDF…';
+      showToast('⏳ Extracting PDF text…', 'default');
+
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const typedArray = new Uint8Array(ev.target.result);
+
+        window.pdfjsLib.getDocument({ data: typedArray }).promise
+          .then(function(pdf) {
+            const totalPages = pdf.numPages;
+            msg.textContent = `Reading page 1 of ${totalPages}…`;
+
+            const pagePromises = [];
+            for (let i = 1; i <= totalPages; i++) {
+              const pageNum = i;
+              pagePromises.push(
+                pdf.getPage(pageNum).then(function(page) {
+                  msg.textContent = `Reading page ${pageNum} of ${totalPages}…`;
+                  return page.getTextContent().then(function(content) {
+                    // Reconstruct text with proper line breaks using Y-position
+                    let lines = [];
+                    let lastY = null;
+                    let lineBuffer = [];
+
+                    content.items.forEach(function(item) {
+                      if (!item.str) return;
+                      const y = item.transform ? Math.round(item.transform[5]) : null;
+
+                      if (lastY !== null && y !== null && Math.abs(y - lastY) > 3) {
+                        if (lineBuffer.length) {
+                          lines.push(lineBuffer.join(' '));
+                          lineBuffer = [];
+                        }
+                      }
+                      if (item.str.trim()) lineBuffer.push(item.str);
+                      lastY = y;
+                    });
+                    if (lineBuffer.length) lines.push(lineBuffer.join(' '));
+
+                    return lines.join('\n').trim();
+                  });
+                })
+              );
+            }
+
+            return Promise.all(pagePromises).then(function(pages) {
+              const fullText = pages
+                .map(p => p.trim())
+                .filter(p => p.length > 0)
+                .join('\n\n');
+
+              prog.classList.remove('visible');
+
+              if (!fullText.trim()) {
+                txt.textContent = '⚠️ No text found. This PDF may be scanned (image-based). Try a PDF with selectable text.';
+                out.classList.add('visible');
+                showToast('⚠️ No text found in PDF', 'warning');
+                return;
+              }
+
+              txt.textContent = fullText;
+              out.classList.add('visible');
+
+              const wordCount = fullText.split(/\s+/).filter(Boolean).length;
+              showToast(`✅ PDF extracted! ${totalPages} page(s), ${wordCount} words.`, 'success');
+            });
+          })
+          .catch(function(err) {
+            prog.classList.remove('visible');
+            txt.textContent = '❌ Could not read this PDF. Error: ' + (err.message || 'Unknown error');
+            out.classList.add('visible');
+            showToast('❌ PDF read failed', 'error');
+            console.error('PDF.js error:', err);
+          });
+      };
+
+      reader.onerror = function() {
+        prog.classList.remove('visible');
+        showToast('❌ Failed to read file', 'error');
+      };
+
+      reader.readAsArrayBuffer(file);
+      e.target.value = ''; // allow re-uploading same file
+      return;
+    }
+
+    // ── Unknown file type ─────────────────────────────────────
+    showToast('⚠️ Unsupported file type. Use .txt, .pdf, or an image.', 'warning');
+  }
+
+  // ── SEND OCR/PDF TEXT TO FORMATTER ───────────────────────────
+  function useOcrText() {
+    const extracted = document.getElementById('ocrText').textContent.trim();
+    if (!extracted) { showToast('No text to send!', 'warning'); return; }
+    document.getElementById('textInput').value = extracted;
+    if (typeof updateWordCount === 'function') updateWordCount(extracted);
+    scrollToSection('text-formatter');
+    showToast('✅ Text sent to formatter!', 'success');
+  }
+
+  // ── FLASHCARDS ────────────────────────────────────────────────
+  const FLASH_WORDS=['cat','dog','sun','run','book','tree','bird','fish','happy','school','apple','water','house','jump','love','read','play','music','star','flower','rain','car','cake','learn','heart','red','blue','green'];
+  function generateFlashcards() {
+    const grid=document.getElementById('flashcardGrid'); grid.innerHTML='';
+    const picks=[...FLASH_WORDS].sort(()=>Math.random()-0.5).slice(0,8);
+    picks.forEach(word=>{
+      const emoji=getEmoji(word);
+      const col=document.createElement('div'); col.className='col-6 col-md-3';
+      col.innerHTML=`<div class="flashcard" style="background:white;border:3px solid #E0E0E0;border-radius:20px;padding:20px;text-align:center;cursor:pointer;transition:all .3s" onclick="flipCard(this,'${word}','${emoji}')">
+        <div class="fc-front"><div style="font-size:48px">❓</div><div style="font-weight:900;font-size:14px;color:var(--text-medium);margin-top:8px">Tap to reveal</div></div>
+        <div class="fc-back" style="display:none"><div style="font-size:48px">${emoji}</div><div style="font-weight:900;font-size:18px;margin-top:8px">${word}</div></div>
+      </div>`;
+      grid.appendChild(col);
+    });
+  }
+  function flipCard(card,word,emoji) {
+    const front=card.querySelector('.fc-front'),back=card.querySelector('.fc-back');
+    if (front.style.display!=='none') {
+      front.style.display='none'; back.style.display='block';
+      card.style.borderColor='var(--green)'; card.style.background='#E8F5E9';
+      if('speechSynthesis'in window){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(word);u.rate=0.8;window.speechSynthesis.speak(u);}
+    } else { front.style.display='block'; back.style.display='none'; card.style.borderColor='#E0E0E0'; card.style.background='white'; }
+  }
+  generateFlashcards();
+
+  document.querySelectorAll('.bg-option').forEach(opt=>{
+    opt.addEventListener('click',function(){ document.querySelectorAll('.bg-option').forEach(o=>o.classList.remove('active')); this.classList.add('active'); });
+  });
+
+  // ── CUSTOMIZATION FUNCTIONS ───────────────────────────────────
+
+  // Zoom: scales ONLY the formatted text output
+  function applyZoom(val) {
+    const pct = parseInt(val);
+    const display = document.getElementById('zoomDisplay');
+    if (display) display.textContent = pct + '%';
+    const out = document.getElementById('textOutput');
+    if (out) {
+      out.style.fontSize = (pct / 100 * 18) + 'px';
+      out.style.transform = 'scale(' + (pct / 100) + ')';
+      out.style.transformOrigin = 'top left';
+      out.style.width = (100 / (pct / 100)) + '%';
+    }
+  }
+
+  // Font size for the output panel
+  function applyFontSize(val, displayEl) {
+    if (displayEl) displayEl.textContent = val + 'px';
+    const out = document.getElementById('textOutput');
+    const inp = document.getElementById('textInput');
+    if (out) out.style.fontSize = val + 'px';
+    if (inp) inp.style.fontSize = val + 'px';
+  }
+
+  // Line spacing
+  function applySpacing(val, displayEl) {
+    if (displayEl) displayEl.textContent = parseFloat(val).toFixed(1);
+    const out = document.getElementById('textOutput');
+    if (out) out.style.lineHeight = val;
+    const prev = document.getElementById('spacingPreview');
+    if (prev) prev.style.lineHeight = val;
+  }
+
+  // Font family
+  function applyFont(fontVal) {
+    const out = document.getElementById('textOutput');
+    const inp = document.getElementById('textInput');
+    if (out) out.style.fontFamily = fontVal;
+    if (inp) inp.style.fontFamily = fontVal;
+  }
+
+  // Background colour
+  function applyBg(color, el) {
+    const out = document.getElementById('textOutput');
+    const reader = document.querySelector('.dash-reader');
+    if (out) out.style.background = color;
+    // Apply to all reader panels
+    document.querySelectorAll('.dash-reader').forEach(r => r.style.background = color);
+    document.querySelectorAll('.bg-option').forEach(o => o.classList.remove('active'));
+    if (el) el.classList.add('active');
+  }
+
+  // Letter spacing — cascades to all child tokens in formatted output
+  function applyLetterSpacing(val) {
+    const lsVal = document.getElementById('lsValue');
+    if (lsVal) lsVal.textContent = parseFloat(val).toFixed(2) + 'em';
+    const out = document.getElementById('textOutput');
+    if (out) {
+      out.style.letterSpacing = val + 'em';
+      out.querySelectorAll('span, b, strong').forEach(el => {
+        el.style.letterSpacing = val + 'em';
+      });
+    }
+    const prev = document.getElementById('spacingPreview');
+    if (prev) prev.style.letterSpacing = val + 'em';
+    window._currentLetterSpacing = val;
+  }
+
+  // Show/hide customization panel
+  function toggleCustomize() {
+    const panel = document.getElementById('customizePanel');
+    if (!panel) return;
+    const isHidden = panel.style.display === 'none' || getComputedStyle(panel).display === 'none';
+    panel.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Focus mode: dim everything except the reader
+  function toggleFocusMode(checkbox) {
+    document.body.classList.toggle('focus-mode', checkbox.checked);
+    if (!document.getElementById('focus-mode-style')) {
+      const s = document.createElement('style');
+      s.id = 'focus-mode-style';
+      s.textContent = '.focus-mode .dash-tools-grid,.focus-mode .dash-welcome{opacity:0.25;pointer-events:none}.focus-mode #text-formatter{box-shadow:0 0 0 4px var(--orange)!important}';
+      document.head.appendChild(s);
+    }
+  }
+
+  // High contrast mode
+  function toggleHighContrast(checkbox) {
+    if (!document.getElementById('high-contrast-style')) {
+      const s = document.createElement('style');
+      s.id = 'high-contrast-style';
+      s.textContent = '.high-contrast{background:#000!important;color:#FFD700!important}.high-contrast .dash-reader{background:#111!important;color:#FFD700!important;border:2px solid #FFD700!important}.high-contrast .reader-output{background:#000!important;color:#FFD700!important}';
+      document.head.appendChild(s);
+    }
+    document.body.classList.toggle('high-contrast', checkbox.checked);
+    document.querySelectorAll('.dash-reader').forEach(el => el.classList.toggle('high-contrast', checkbox.checked));
+  }
+
+  // Syllable toggle (re-formats existing output)
+  function toggleSyllables(checkbox) {
+    // Re-run format if there's text
+    const inp = document.getElementById('textInput');
+    if (inp && inp.value.trim() && typeof formatText === 'function') {
+      formatText();
+    }
+  }
+
+  // Reading ruler — follows mouse across the output area
+  (function initReadingRuler() {
+    let ruler = null;
+    document.getElementById('rulerToggle').addEventListener('change', function() {
+      if (this.checked) {
+        ruler = document.createElement('div');
+        ruler.id = 'reading-ruler';
+        ruler.style.cssText = 'position:fixed;left:0;right:0;height:36px;background:rgba(255,214,10,0.35);pointer-events:none;z-index:9998;border-top:2px solid #FF6B35;border-bottom:2px solid #FF6B35;transition:top .05s linear;display:block';
+        document.body.appendChild(ruler);
+        document.addEventListener('mousemove', moveRuler);
+      } else {
+        if (ruler) { ruler.remove(); ruler = null; }
+        document.removeEventListener('mousemove', moveRuler);
+      }
+    });
+    function moveRuler(e) { if (ruler) ruler.style.top = (e.clientY - 18) + 'px'; }
+  })();
+</script>
+
+<script>
+// SAFE LOGOUT
+function doLogout() {
+  localStorage.removeItem('dyslexease_user');
+  localStorage.removeItem('dyslexease_loggedIn');
+  var href = window.location.href;
+  var target = href.includes('/pages/') ? href.substring(0, href.indexOf('/pages/')) + '/index.html' : './index.html';
+  var toast = document.createElement('div');
+  toast.textContent = '👋 Logged out! Redirecting...';
+  toast.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1A1A2E;color:white;padding:16px 28px;border-radius:30px;font-weight:800;font-size:16px;z-index:9999;';
+  document.body.appendChild(toast);
+  setTimeout(function() { window.location.href = target; }, 1000);
+}
+</script>
+
+<script>
+// Fallback tab switcher if Bootstrap JS unavailable
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(function(){
+    if(typeof bootstrap === 'undefined'){
+      document.querySelectorAll('[data-bs-toggle="pill"]').forEach(function(btn){
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+          var target = document.querySelector(btn.getAttribute('data-bs-target'));
+          if(!target) return;
+          document.querySelectorAll('.nav-link').forEach(function(b){ b.classList.remove('active'); });
+          document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('show','active'); });
+          btn.classList.add('active');
+          target.classList.add('show','active');
+        });
+      });
+    }
+  }, 500);
+});
+</script>
+</body>
+</html>
